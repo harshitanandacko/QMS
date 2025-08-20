@@ -9,6 +9,8 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Approvals from "@/pages/approvals";
 import History from "@/pages/history";
+import Analytics from "@/pages/analytics";
+import Settings from "@/pages/settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -22,6 +24,8 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/approvals" component={Approvals} />
           <Route path="/history" component={History} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/settings" component={Settings} />
         </>
       )}
       <Route component={NotFound} />
