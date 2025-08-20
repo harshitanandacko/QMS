@@ -70,7 +70,7 @@ export default function History() {
     return null;
   }
 
-  const filteredQueries = queries.filter((query: Query) => {
+  const filteredQueries = (queries as any[]).filter((query: Query) => {
     const matchesSearch = query.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          query.sqlQuery.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          query.serverId.toLowerCase().includes(searchTerm.toLowerCase());

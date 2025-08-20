@@ -59,6 +59,7 @@ async function upsertUser(
 ) {
   await storage.upsertUser({
     id: claims["sub"],
+    role: "user", // Default role
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],

@@ -116,7 +116,7 @@ export class DatabaseStorage implements IStorage {
     if (status) conditions.push(eq(queries.status, status as any));
     
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
     
     return await query.orderBy(desc(queries.createdAt));
@@ -208,9 +208,9 @@ export class DatabaseStorage implements IStorage {
           eq(queryTemplates.createdBy, userId),
           eq(queryTemplates.isPublic, true)
         )
-      );
+      ) as any;
     } else {
-      query = query.where(eq(queryTemplates.isPublic, true));
+      query = query.where(eq(queryTemplates.isPublic, true)) as any;
     }
     
     return await query.orderBy(asc(queryTemplates.name));

@@ -49,7 +49,7 @@ export default function Approvals() {
 
   const { data: pendingQueries = [], isLoading: isLoadingQueries } = useQuery({
     queryKey: ["/api/approvals/pending"],
-    enabled: !!user && (user.role === 'team_manager' || user.role === 'skip_manager'),
+    enabled: !!user && ((user as any).role === 'team_manager' || (user as any).role === 'skip_manager'),
   });
 
   const approveMutation = useMutation({

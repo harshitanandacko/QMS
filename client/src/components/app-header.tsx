@@ -28,11 +28,11 @@ export default function AppHeader() {
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-enterprise-muted">
-              Welcome, <span className="font-medium">{user?.firstName || user?.email || 'User'}</span>
+              Welcome, <span className="font-medium">{(user as any)?.firstName || (user as any)?.email || 'User'}</span>
             </span>
             <div className="flex items-center space-x-2 bg-green-100 px-3 py-1 rounded-full">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-green-700">{getRoleBadge(user?.role)}</span>
+              <span className="text-sm text-green-700">{getRoleBadge((user as any)?.role)}</span>
             </div>
             <Button 
               variant="outline" 

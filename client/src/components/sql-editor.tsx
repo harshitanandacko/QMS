@@ -61,7 +61,7 @@ export default function SqlEditor({ onExecutionComplete }: SqlEditorProps) {
   useEffect(() => {
     const paramRegex = /:\w+/g;
     const foundParams = sqlQuery.match(paramRegex) || [];
-    const uniqueParams = [...new Set(foundParams)];
+    const uniqueParams = Array.from(new Set(foundParams));
     
     if (uniqueParams.length > 0) {
       setShowParameters(true);
