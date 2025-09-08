@@ -29,6 +29,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Debug endpoint to check environment variables (temporary)
+  app.get('/api/debug/env', (req, res) => {
+    res.json({
+      hasBasicAuthUsername: !!process.env.BASIC_AUTH_USERNAME,
+      hasBasicAuthPassword: !!process.env.BASIC_AUTH_PASSWORD,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      nodeEnv: process.env.NODE_ENV,
+      port: process.env.PORT,
+      // Don't expose actual values for security
+      basicAuthUsernameLength: process.env.BASIC_AUTH_USERNAME?.length || 0,
+      basicAuthPasswordLength: process.env.BASIC_AUTH_PASSWORD?.length || 0
+    });
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
