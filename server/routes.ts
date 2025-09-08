@@ -18,7 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupBasicAuth(app);
 
   // Seed database servers on startup
-  // await seedDatabaseServers(); // Temporarily disabled for debugging
+  await seedDatabaseServers();
 
   // Health check endpoint (no auth required)
   app.get('/api/health', (req, res) => {
