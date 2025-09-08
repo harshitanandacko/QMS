@@ -1,8 +1,117 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Database, Shield, Users, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Landing() {
+  const [showLogin, setShowLogin] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const { toast } = useToast();
+
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      return apiRequest("/api/login", {
+        method: "POST",
+        body: JSON.stringify(credentials),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Login successful",
+        description: "Welcome to QMS Dashboard",
+      });
+      // Reload the page to trigger the auth check and show the dashboard
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Login failed", 
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username && password) {
+      loginMutation.mutate({ username, password });
+    }
+  };
+
+  if (showLogin) {
+    return (
+      <div className="min-h-screen bg-enterprise-gray flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="w-12 h-12 bg-enterprise-blue rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Database className="w-6 h-6 text-white" />
+            </div>
+            <CardTitle className="text-2xl">Sign In to QMS</CardTitle>
+            <CardDescription>
+              Enter your credentials to access the Oracle Query Management System
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  data-testid="input-username"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  data-testid="input-password"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  type="submit"
+                  className="flex-1 bg-enterprise-blue hover:bg-enterprise-blue-dark text-white"
+                  disabled={loginMutation.isPending}
+                  data-testid="button-login"
+                >
+                  {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowLogin(false)}
+                  data-testid="button-back"
+                >
+                  Back
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-enterprise-gray">
       {/* Header */}
@@ -16,8 +125,9 @@ export default function Landing() {
               <h1 className="text-xl font-semibold text-gray-900">Oracle Query Management</h1>
             </div>
             <Button 
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => setShowLogin(true)}
               className="bg-enterprise-blue hover:bg-enterprise-blue-dark text-white"
+              data-testid="button-signin-header"
             >
               Sign In
             </Button>
@@ -37,8 +147,9 @@ export default function Landing() {
           </p>
           <Button 
             size="lg"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => setShowLogin(true)}
             className="bg-enterprise-blue hover:bg-enterprise-blue-dark text-white px-8 py-3"
+            data-testid="button-get-started"
           >
             Get Started
           </Button>
@@ -248,8 +359,9 @@ export default function Landing() {
           </p>
           <Button 
             size="lg"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => setShowLogin(true)}
             className="bg-enterprise-blue hover:bg-enterprise-blue-dark text-white px-8 py-3"
+            data-testid="button-access-dashboard"
           >
             Access Your Dashboard
           </Button>
