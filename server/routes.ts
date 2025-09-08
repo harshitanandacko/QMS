@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupBasicAuth, isAuthenticated } from "./basicAuth";
 // Uncomment when Oracle is configured:
 // const oracleRoutes = require('./oracle-routes');
 import { 
@@ -15,10 +15,19 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  await setupBasicAuth(app);
 
   // Seed database servers on startup
   await seedDatabaseServers();
+
+  // Health check endpoint (no auth required)
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      message: 'QMS Server is running with Basic Authentication',
+      timestamp: new Date().toISOString()
+    });
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
