@@ -16,13 +16,21 @@ export default function Landing() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      return apiRequest("/api/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
-        body: JSON.stringify(credentials),
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(credentials),
+        credentials: "include",
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Login failed");
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
