@@ -32,36 +32,23 @@ export async function setupBasicAuth(app: Express) {
   // Basic auth login endpoint
   app.post("/api/login", async (req: Request, res: Response) => {
     try {
-      console.log("Login attempt received:", { body: req.body });
       const { username, password } = req.body;
       
       // Check basic auth credentials from environment
       const validUsername = process.env.BASIC_AUTH_USERNAME;
       const validPassword = process.env.BASIC_AUTH_PASSWORD;
       
-      console.log("Environment check:", { 
-        hasValidUsername: !!validUsername,
-        hasValidPassword: !!validPassword,
-        receivedUsername: username
-      });
-      
       if (!validUsername || !validPassword) {
         return res.status(500).json({ message: "Basic auth not configured" });
       }
       
       if (username !== validUsername || password !== validPassword) {
-        console.log("Credential mismatch");
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      console.log("Credentials valid, checking user in database...");
-      
       // Create or get admin user
       let user = await storage.getUserByUsername(username);
-      console.log("Existing user found:", !!user);
-      
       if (!user) {
-        console.log("Creating new user...");
         user = await storage.createUser({
           id: "admin-user-1",
           username,
@@ -70,10 +57,8 @@ export async function setupBasicAuth(app: Express) {
           lastName: "User",
           role: "skip_manager", // Give admin highest permissions
         });
-        console.log("User created:", user);
       }
       
-      console.log("Storing user in session...");
       // Store user in session
       (req.session as any).user = {
         id: user.id,
@@ -82,7 +67,6 @@ export async function setupBasicAuth(app: Express) {
         claims: { sub: user.id } // For compatibility with existing code
       };
       
-      console.log("Login successful for user:", user.username);
       res.json({ message: "Login successful", user: { 
         id: user.id, 
         username: user.username, 
@@ -90,7 +74,7 @@ export async function setupBasicAuth(app: Express) {
       }});
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Internal server error", error: error.message });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
