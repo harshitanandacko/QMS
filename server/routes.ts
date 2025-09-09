@@ -89,6 +89,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/database-servers', isAuthenticated, async (req, res) => {
     try {
       const servers = await storage.getDatabaseServers();
+      // Add cache-busting headers to ensure fresh data
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json(servers);
     } catch (error) {
       console.error("Error fetching database servers:", error);
