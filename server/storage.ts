@@ -1,5 +1,6 @@
 import {
   users,
+  teams,
   databaseServers,
   databaseTables,
   queries,
@@ -7,6 +8,7 @@ import {
   queryTemplates,
   type User,
   type UpsertUser,
+  type Team,
   type DatabaseServer,
   type DatabaseTable,
   type Query,
@@ -28,6 +30,10 @@ export interface IStorage {
   createUser(userData: UpsertUser & { id?: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Team operations
+  getTeam(id: string): Promise<Team | undefined>;
+  getTeams(): Promise<Team[]>;
+  
   // Database server operations
   getDatabaseServers(): Promise<DatabaseServer[]>;
   getDatabaseServer(id: string): Promise<DatabaseServer | undefined>;
@@ -40,7 +46,7 @@ export interface IStorage {
   // Query operations
   getQueries(userId?: string, status?: string): Promise<Query[]>;
   getQuery(id: string): Promise<Query | undefined>;
-  createQuery(query: InsertQuery): Promise<Query>;
+  createQuery(query: InsertQuery & { status?: any }): Promise<Query>;
   updateQuery(id: string, updates: Partial<Query>): Promise<Query>;
   getQueriesByUser(userId: string): Promise<Query[]>;
   getQueriesForApproval(approverId: string, approverType: 'team_manager' | 'skip_manager'): Promise<Query[]>;
@@ -88,6 +94,16 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // Team operations
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team;
+  }
+
+  async getTeams(): Promise<Team[]> {
+    return await db.select().from(teams).orderBy(asc(teams.name));
   }
 
   // Database server operations

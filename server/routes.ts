@@ -94,26 +94,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/queries', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const queryData = insertQuerySchema.parse({
-        ...req.body,
-        submittedBy: userId,
-      });
-
-      // Assign team manager and skip manager based on roles
-      const teamManagers = await storage.getUsersByRole('team_manager');
-      const skipManagers = await storage.getUsersByRole('skip_manager');
+      const user = await storage.getUser(userId);
       
-      if (teamManagers.length === 0 || skipManagers.length === 0) {
+      if (!user || !user.teamId) {
         return res.status(400).json({ 
-          message: "No team managers or skip managers available for approval" 
+          message: "User must be assigned to a team to submit queries" 
         });
       }
 
-      // For simplicity, assign the first available managers
-      queryData.teamManagerId = teamManagers[0].id;
-      queryData.skipManagerId = skipManagers[0].id;
+      const queryData = insertQuerySchema.parse({
+        ...req.body,
+        submittedBy: userId,
+        teamId: user.teamId,
+      });
+
+      // Get team information to assign correct managers
+      const team = await storage.getTeam(user.teamId);
+      if (!team) {
+        return res.status(400).json({ 
+          message: "Team not found" 
+        });
+      }
+
+      // Set approval requirements based on query type
+      const isSelectQuery = queryData.queryType === 'select';
+      queryData.requiresApproval = !isSelectQuery;
+
+      // Assign team manager and skip manager from the user's team
+      queryData.teamManagerId = team.managerId;
+      queryData.skipManagerId = team.skipManagerId;
 
       const query = await storage.createQuery(queryData);
+      
+      // For SELECT queries, auto-approve after creation
+      if (isSelectQuery) {
+        await storage.updateQuery(query.id, { status: 'approved' });
+      }
       res.status(201).json(query);
     } catch (error) {
       if (error instanceof z.ZodError) {

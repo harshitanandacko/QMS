@@ -24,6 +24,15 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Teams table
+export const teams = pgTable("teams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull().unique(),
+  managerId: varchar("manager_id").notNull(),
+  skipManagerId: varchar("skip_manager_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -33,6 +42,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default('user'), // 'user', 'team_manager', 'skip_manager'
+  teamId: varchar("team_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -92,8 +102,10 @@ export const queries = pgTable("queries", {
   tableId: varchar("table_id").references(() => databaseTables.id),
   status: queryStatusEnum("status").notNull().default('draft'),
   submittedBy: varchar("submitted_by").notNull().references(() => users.id),
+  teamId: varchar("team_id").notNull().references(() => teams.id),
   teamManagerId: varchar("team_manager_id").references(() => users.id),
   skipManagerId: varchar("skip_manager_id").references(() => users.id),
+  requiresApproval: boolean("requires_approval").notNull().default(true), // false for SELECT queries
   estimatedExecutionTime: varchar("estimated_execution_time"),
   actualExecutionTime: varchar("actual_execution_time"),
   rowsAffected: varchar("rows_affected"),
@@ -134,7 +146,32 @@ export const queryTemplates = pgTable("query_templates", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const teamsRelations = relations(teams, ({ one, many }) => ({
+  manager: one(users, {
+    fields: [teams.managerId],
+    references: [users.id],
+    relationName: "teamManager",
+  }),
+  skipManager: one(users, {
+    fields: [teams.skipManagerId],
+    references: [users.id],
+    relationName: "skipManager",
+  }),
+  members: many(users),
+  queries: many(queries),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [users.teamId],
+    references: [teams.id],
+  }),
+  managedTeam: one(teams, {
+    fields: [users.id],
+    references: [teams.managerId],
+    relationName: "teamManager",
+  }),
+  skipManagedTeams: many(teams, { relationName: "skipManager" }),
   submittedQueries: many(queries, { relationName: "submittedBy" }),
   teamManagerQueries: many(queries, { relationName: "teamManagerQueries" }),
   skipManagerQueries: many(queries, { relationName: "skipManagerQueries" }),
@@ -160,6 +197,10 @@ export const queriesRelations = relations(queries, ({ one, many }) => ({
     fields: [queries.submittedBy],
     references: [users.id],
     relationName: "submittedBy",
+  }),
+  team: one(teams, {
+    fields: [queries.teamId],
+    references: [teams.id],
   }),
   teamManager: one(users, {
     fields: [queries.teamManagerId],
@@ -208,6 +249,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   lastName: true,
   profileImageUrl: true,
   role: true,
+  teamId: true,
 });
 
 export const insertDatabaseServerSchema = createInsertSchema(databaseServers).omit({
@@ -239,14 +281,22 @@ export const insertQueryTemplateSchema = createInsertSchema(queryTemplates).omit
   createdAt: true,
 });
 
+// Insert schemas
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type Team = typeof teams.$inferSelect;
 export type DatabaseServer = typeof databaseServers.$inferSelect;
 export type DatabaseTable = typeof databaseTables.$inferSelect;
 export type Query = typeof queries.$inferSelect;
 export type Approval = typeof approvals.$inferSelect;
 export type QueryTemplate = typeof queryTemplates.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type InsertDatabaseServer = z.infer<typeof insertDatabaseServerSchema>;
 export type InsertDatabaseTable = z.infer<typeof insertDatabaseTableSchema>;
 export type InsertQuery = z.infer<typeof insertQuerySchema>;
