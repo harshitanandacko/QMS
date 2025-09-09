@@ -2,8 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupBasicAuth, isAuthenticated } from "./basicAuth";
-// Uncomment when Oracle is configured:
-// const oracleRoutes = require('./oracle-routes');
+import OracleService from "./oracleService";
 import { 
   insertQuerySchema, 
   insertApprovalSchema, 
@@ -19,6 +18,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Seed database servers on startup
   await seedDatabaseServers();
+  
+  // Initialize Oracle connections for critical servers
+  await initializeOracleConnections();
 
   // Health check endpoint (no auth required)
   app.get('/api/health', (req, res) => {
@@ -97,8 +99,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/database-servers/:serverId/tables', isAuthenticated, async (req, res) => {
     try {
       const { serverId } = req.params;
-      const tables = await storage.getTablesForServer(serverId);
-      res.json(tables);
+      
+      // Get server details for Oracle connection
+      const server = await storage.getDatabaseServer(serverId);
+      if (!server) {
+        return res.status(404).json({ message: "Database server not found" });
+      }
+
+      // Get Oracle service instance
+      const oracleService = OracleService.getInstance();
+      
+      try {
+        // Get Oracle configuration
+        const oracleConfig = OracleService.getOracleConfig(server);
+        
+        // Create connection pool if it doesn't exist
+        await oracleService.createConnectionPool(serverId, oracleConfig);
+        
+        // Fetch real tables from Oracle
+        const oracleTables = await oracleService.fetchTables(serverId);
+        
+        // Transform Oracle tables to our expected format
+        const tables = oracleTables.map(table => ({
+          id: `${serverId}_${table.schema}_${table.tableName}`,
+          serverId: serverId,
+          tableName: table.tableName,
+          schema: table.schema,
+          tableType: table.tableType,
+          comments: table.comments
+        }));
+        
+        console.log(`Fetched ${tables.length} real tables from Oracle server ${serverId}`);
+        res.json(tables);
+        
+      } catch (oracleError) {
+        console.error(`Oracle connection failed for ${serverId}:`, oracleError);
+        
+        // Fallback to mock data if Oracle connection fails
+        console.log(`Falling back to mock data for ${serverId}`);
+        const mockTables = await storage.getTablesForServer(serverId);
+        res.json(mockTables);
+      }
+      
     } catch (error) {
       console.error("Error fetching tables:", error);
       res.status(500).json({ message: "Failed to fetch tables" });
@@ -465,6 +507,32 @@ async function seedDatabaseServers() {
     console.log('Database servers seeded successfully');
   } catch (error) {
     console.error('Error seeding database servers:', error);
+  }
+}
+
+async function initializeOracleConnections() {
+  try {
+    const oracleService = OracleService.getInstance();
+    
+    // Initialize connection for tpasolorad004 (the one with real credentials)
+    const testServer = await storage.getDatabaseServer('tpasolorad004');
+    if (testServer) {
+      try {
+        const oracleConfig = OracleService.getOracleConfig(testServer);
+        const isConnected = await oracleService.testConnection('tpasolorad004', oracleConfig);
+        
+        if (isConnected) {
+          await oracleService.createConnectionPool('tpasolorad004', oracleConfig);
+          console.log('✅ Oracle connection pool created for tpasolorad004');
+        } else {
+          console.log('⚠️  Oracle connection test failed for tpasolorad004 - using mock data fallback');
+        }
+      } catch (error) {
+        console.error('Failed to initialize Oracle connection for tpasolorad004:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Error initializing Oracle connections:', error);
   }
 }
 
