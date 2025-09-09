@@ -20,9 +20,9 @@ export default function Sidebar() {
           {navigation.map((item) => (
             <li key={item.name}>
               <Link href={item.href}>
-                <a
+                <div
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
                     item.current
                       ? "text-enterprise-blue bg-blue-50"
                       : "text-gray-700 hover:text-enterprise-blue hover:bg-gray-50"
@@ -35,7 +35,7 @@ export default function Sidebar() {
                       {item.badge}
                     </span>
                   )}
-                </a>
+                </div>
               </Link>
             </li>
           ))}
