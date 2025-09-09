@@ -492,16 +492,7 @@ async function seedDatabaseServers() {
 
     for (const server of servers) {
       await storage.createDatabaseServer(server);
-      
-      // Add sample tables for each server
-      const sampleTables = ['employees', 'departments', 'sales_data', 'customers', 'orders', 'products', 'audit_log', 'user_sessions'];
-      for (const tableName of sampleTables) {
-        await storage.createDatabaseTable({
-          serverId: server.id,
-          tableName,
-          schema: 'public',
-        });
-      }
+      // Note: Tables will be fetched dynamically from Oracle servers
     }
 
     console.log('Database servers seeded successfully');
