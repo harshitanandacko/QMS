@@ -36,6 +36,41 @@ export default function ApprovalSidebar() {
     submittedAt: new Date().toISOString(),
   };
 
+  // Fetch user's team information to get actual managers
+  const { data: teamInfo } = useQuery<{
+    id: string;
+    name: string;
+    managerId: string;
+    skipManagerId: string;
+  }>({
+    queryKey: ['/api/users/me/team'],
+    enabled: !!user,
+  });
+
+  // Fetch all users to get manager details
+  const { data: allUsers = [] } = useQuery<Array<{
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    role: string;
+    email: string | null;
+  }>>({
+    queryKey: ['/api/users'],
+    enabled: !!teamInfo,
+  });
+
+  // Get actual manager details
+  const teamManager = allUsers.find(u => u.id === teamInfo?.managerId);
+  const skipManager = allUsers.find(u => u.id === teamInfo?.skipManagerId);
+
+  // Default to mock data if real data not available
+  const teamManagerName = teamManager ? `${teamManager.firstName || ''} ${teamManager.lastName || ''}`.trim() : 'Sarah Johnson';
+  const teamManagerTitle = teamManager?.role === 'team_manager' ? 
+    `${teamInfo?.name || ''} Team Manager` : 'Database Team Lead';
+  
+  const skipManagerName = skipManager ? `${skipManager.firstName || ''} ${skipManager.lastName || ''}`.trim() : 'Michael Chen';
+  const skipManagerTitle = skipManager?.role === 'skip_manager' ? 'Skip Level Manager' : 'IT Operations Director';
+
   const { data: recentQueries = [] } = useQuery<Query[]>({
     queryKey: ["/api/queries"],
     select: (data) => data.slice(0, 3), // Only show recent 3 queries
@@ -210,8 +245,8 @@ export default function ApprovalSidebar() {
           {renderApprovalStep(
             'team_manager',
             'Team Manager',
-            'Sarah Johnson',
-            'Database Team Lead',
+            teamManagerName,
+            teamManagerTitle,
             teamManagerStatus
           )}
 
@@ -224,8 +259,8 @@ export default function ApprovalSidebar() {
           {renderApprovalStep(
             'skip_manager',
             'Skip Manager',
-            'Michael Chen',
-            'IT Operations Director',
+            skipManagerName,
+            skipManagerTitle,
             skipManagerStatus
           )}
 

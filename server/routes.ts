@@ -42,6 +42,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user's team information
+  app.get('/api/users/me/team', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.teamId) {
+        return res.status(404).json({ message: "User team not found" });
+      }
+      
+      const team = await storage.getTeam(user.teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      
+      res.json(team);
+    } catch (error) {
+      console.error("Error fetching user team:", error);
+      res.status(500).json({ message: "Failed to fetch team information" });
+    }
+  });
+
+  // Get all users (for manager lookup)
+  app.get('/api/users', isAuthenticated, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Only return essential fields for security
+      const safeUsers = users.map((user: any) => ({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
   // Database server routes
   app.get('/api/database-servers', isAuthenticated, async (req, res) => {
     try {
