@@ -1,0 +1,26 @@
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]: Login error: error: permission denied for table users
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:     at /opt/qms/QMS/node_modules/pg-pool/index.js:45:11
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:     at async file:///opt/qms/QMS/node_modules/drizzle-orm/node-postgres/session.js:83:22
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:     at async DatabaseStorage.getUserByUsername (file:///opt/qms/QMS/dist/index.js:325:20)
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:     at async file:///opt/qms/QMS/dist/index.js:495:18 {
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   length: 93,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   severity: 'ERROR',
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   code: '42501',
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   detail: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   hint: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   position: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   internalPosition: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   internalQuery: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   where: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   schema: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   table: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   column: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   dataType: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   constraint: undefined,
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   file: 'aclchk.c',
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   line: '3452',
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]:   routine: 'aclcheck_error'
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]: }
+Sep 12 13:55:13 ip-10-207-214-202 npm[253037]: 1:55:13 PM [express] POST /api/login 500 in 16ms :: {"message":"Internal server error"}
+^[^[
