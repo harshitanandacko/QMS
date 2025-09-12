@@ -474,7 +474,7 @@ async function seedDatabaseServers() {
 
     // Only include tpasolorad004 - the server with real Oracle credentials
     const servers = [
-      { id: 'tpasolorad004', name: 'tpasolorad004', host: 'tpasolorad004.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
+      { id: 'tpasolorad004', name: 'tpasolorad004', host: 'tpasolorad004.company.com', port: '1521', version: '11g', type: 'reporting', status: 'online' },
     ];
 
     for (const server of servers) {
