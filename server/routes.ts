@@ -472,26 +472,9 @@ async function seedDatabaseServers() {
     const existingServers = await storage.getDatabaseServers();
     if (existingServers.length > 0) return;
 
+    // Only include tpasolorad004 - the server with real Oracle credentials
     const servers = [
-      { id: 'tpaoeldbsd001', name: 'tpaoeldbsd001', host: 'tpaoeldbsd001.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpaoeldbsr001', name: 'tpaoeldbsr001', host: 'tpaoeldbsr001.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpaoeldbsr002', name: 'tpaoeldbsr002', host: 'tpaoeldbsr002.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpaoeldbst001', name: 'tpaoeldbst001', host: 'tpaoeldbst001.company.com', port: '1521', version: '10g', type: 'test', status: 'online' },
-      { id: 'tpasolorad005', name: 'tpasolorad005', host: 'tpasolorad005.company.com', port: '1521', version: '19c', type: 'test', status: 'online' },
-      { id: 'tpasolorap003', name: 'tpasolorap003', host: 'tpasolorap003.company.com', port: '1521', version: '19c', type: 'test', status: 'online' },
-      { id: 'tpasolorar002', name: 'tpasolorar002', host: 'tpasolorar002.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpasolorat002', name: 'tpasolorat002', host: 'tpasolorat002.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpasolorat003', name: 'tpasolorat003', host: 'tpasolorat003.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpasolorar001', name: 'tpasolorar001', host: 'tpasolorar001.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpaoelaudd001', name: 'tpaoelaudd001', host: 'tpaoelaudd001.company.com', port: '1521', version: '10g', type: 'audit', status: 'online' },
-      { id: 'tpaoelaudt001', name: 'tpaoelaudt001', host: 'tpaoelaudt001.company.com', port: '1521', version: '10g', type: 'audit', status: 'online' },
       { id: 'tpasolorad004', name: 'tpasolorad004', host: 'tpasolorad004.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpasolorat001', name: 'tpasolorat001', host: 'tpasolorat001.company.com', port: '1521', version: '19c', type: 'reporting', status: 'online' },
-      { id: 'tpaoelnaor001', name: 'tpaoelnaor001', host: 'tpaoelnaor001.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
-      { id: 'tparhedbsd001', name: 'tparhedbsd001', host: 'tparhedbsd001.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpacospgsr001', name: 'tpacospgsr001', host: 'tpacospgsr001.company.com', port: '5432', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpacospgsr002', name: 'tpacospgsr002', host: 'tpacospgsr002.company.com', port: '5432', version: '19c', type: 'production', status: 'online' },
-      { id: 'tpacostibp002', name: 'tpacostibp002', host: 'tpacostibp002.company.com', port: '1521', version: '19c', type: 'production', status: 'online' },
     ];
 
     for (const server of servers) {
